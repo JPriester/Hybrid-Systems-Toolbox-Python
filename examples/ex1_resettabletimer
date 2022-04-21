@@ -1,0 +1,46 @@
+"""
+Resettable timer problem as discussed in
+R. G. Sanfelice, Hybrid Feedback Control. New Jersey: Princeton University
+Press, 2021.
+
+@author: Jan de Priester
+"""
+import numpy as np
+import matplotlib.pyplot as plt 
+from hybrid_solver import Hybrid_solver
+
+u1, u2 = 1, -1
+
+def flow_set(time, z):
+    # if we are in the flow set, return a 1
+    if z[0] < u1:
+        return 1
+    else:
+        return 0
+
+def flow_map(time, z):
+    return 1
+
+def jump_set(time, z):
+    # if we are in the jump set, return a 0
+    z1 = z[0]
+    if z1 >= u1:
+        return 0
+    else:
+        return 1
+
+def jump_map(z):
+    z[0] = u2
+    return z
+
+t_max = 5
+j_max = 7
+initial_conditions = [[0], 
+                      [1], 
+                      [-1]]
+for z_0 in initial_conditions:
+    plt.close('all')
+    sol = Hybrid_solver(flow_map, jump_map, flow_set, jump_set, z_0, 
+                        t_max, j_max, rule='jump', plot2d=True, plot3d=False)
+    save_name = 'ex1_resettabletimer_'+str(z_0)+'.eps'
+    plt.savefig(save_name, format='eps')
