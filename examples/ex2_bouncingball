@@ -1,0 +1,63 @@
+# -*- coding: utf-8 -*-
+"""
+Bouncing ball problem as discussed in
+R. G. Sanfelice, Hybrid Feedback Control. New Jersey: Princeton University
+Press, 2021.
+
+@author: Jan de Priester
+"""
+import numpy as np
+import matplotlib.pyplot as plt 
+from hybrid_solver import Hybrid_solver
+
+gamma = 9.81
+
+def flow_set(time, z):
+    # if we are in the flow set, return a 1
+    y, v = z[0], z[1]
+    # The numerical implemenation is slightly different from the model, this
+    # is due to the numerical limitations of the solver. You can try setting
+    # the flow set, jump set, and the jump map exactly as stated in the model 
+    # and see what happens.
+    if y >= 0 and not(v==0 and y==0):
+        return 1
+    else:
+        return 0
+
+def flow_map(time, z):
+    y, v = z[0], z[1]
+    return [v, -gamma]
+
+def jump_set(time, z):
+    # if we are in the jump set, return a 0
+    y, v = z[0], z[1]
+    if y < 0 or (y==0 and abs(v)==0):
+        return 0
+    else:
+        return 1
+
+def jump_map(z):
+    y, v = z[0], z[1]
+    # the state is set to 0 instead of y, this is due to numerical
+    # limitations of the solver. If we set it to y, the flow 
+    # conditions are not met after a jump. Try it for yourself and
+    # see if you can understand what is happening. 
+    return [0, -v]
+
+t_max = 5
+j_max = 5
+initial_conditions = [[1, 0], 
+                      [1, -1], 
+                      [0, 1], 
+                      [0, -1], 
+                      [0, 0]]
+for z_0 in initial_conditions:
+    plt.close('all')
+    sol = Hybrid_solver(flow_map, jump_map, flow_set, jump_set, z_0, 
+                        t_max, j_max, rule='flow', plot2d=True, plot3d=False)
+    save_name = 'ex2_bouncingball_z1_'+str(z_0).replace(" ", "")+'.eps'
+    plt.figure(1)
+    plt.savefig(save_name, format='eps')
+    save_name = 'ex2_bouncingball_z2_'+str(z_0).replace(" ", "")+'.eps'
+    plt.figure(2)
+    plt.savefig(save_name, format='eps')
